@@ -19,6 +19,7 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	scTypes "github.com/kubernetes-sigs/service-catalog/pkg/apis/servicecatalog/v1beta1"
 	csbmutation "github.com/kubernetes-sigs/service-catalog/pkg/webhook/servicecatalog/clusterservicebroker/mutation"
@@ -43,6 +44,7 @@ import (
 	"github.com/kubernetes-sigs/service-catalog/pkg/probe"
 	"github.com/pkg/errors"
 	apiextensionsclientset "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apiserver/pkg/server/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -74,6 +76,20 @@ func run(opts *WebhookServerOptions, stopCh <-chan struct{}) error {
 	apiextensionsClient, err := apiextensionsclientset.NewForConfig(cfg)
 	if err != nil {
 		return errors.Wrap(err, "while create apiextension clientset")
+	}
+
+	readinessProbe, err := probe.NewReadinessCRDProbe(apiextensionsClient)
+	if err != nil {
+		return fmt.Errorf("while register readiness probe: %s", err)
+	}
+
+	err = wait.PollImmediate(10*time.Second, 3*time.Minute, readinessProbe.IsReady)
+
+	if err != nil {
+		if err == wait.ErrWaitTimeout {
+			return fmt.Errorf("unable to start service-catalog webhook server: CRDs are not available")
+		}
+		return err
 	}
 
 	err = scTypes.AddToScheme(mgr.GetScheme())
@@ -120,10 +136,6 @@ func run(opts *WebhookServerOptions, stopCh <-chan struct{}) error {
 	healthzSvr := manager.RunnableFunc(func(stopCh <-chan struct{}) error {
 		mux := http.NewServeMux()
 
-		readinessProbe, err := probe.NewReadinessCRDProbe(apiextensionsClient)
-		if err != nil {
-			return fmt.Errorf("while register readiness probe: %s", err)
-		}
 		// readiness registered at /healthz/ready indicates if traffic should be routed to this container
 		healthz.InstallPathHandler(mux, "/healthz/ready", readinessProbe)
 
