@@ -1270,6 +1270,8 @@ type ServiceBindingStatus struct {
 	// LastConditionState aggregates state from the Conditions array
 	// It is used for printing in a kubectl output via additionalPrinterColumns
 	LastConditionState string `json:"lastConditionState"`
+
+	Binding LocalObjectReference `json:"binding"`
 }
 
 // ServiceBindingCondition condition information for a ServiceBinding.

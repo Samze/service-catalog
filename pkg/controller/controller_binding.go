@@ -1453,6 +1453,7 @@ func (c *controller) processBindSuccess(binding *v1beta1.ServiceBinding) error {
 	clearServiceBindingCurrentOperation(binding)
 	rollbackBindingReconciledGenerationOnDeletion(binding, currentReconciledGeneration)
 
+	binding.Status.Binding = v1beta1.LocalObjectReference{Name: binding.Spec.SecretName}
 	if _, err := c.updateServiceBindingStatus(binding); err != nil {
 		return err
 	}

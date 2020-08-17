@@ -2235,12 +2235,17 @@ func schema_pkg_apis_servicecatalog_v1beta1_ServiceBindingStatus(ref common.Refe
 							Format:      "",
 						},
 					},
+					"binding": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("github.com/kubernetes-sigs/service-catalog/pkg/apis/servicecatalog/v1beta1.LocalObjectReference"),
+						},
+					},
 				},
-				Required: []string{"conditions", "asyncOpInProgress", "reconciledGeneration", "orphanMitigationInProgress", "unbindStatus", "lastConditionState"},
+				Required: []string{"conditions", "asyncOpInProgress", "reconciledGeneration", "orphanMitigationInProgress", "unbindStatus", "lastConditionState", "binding"},
 			},
 		},
 		Dependencies: []string{
-			"github.com/kubernetes-sigs/service-catalog/pkg/apis/servicecatalog/v1beta1.ServiceBindingCondition", "github.com/kubernetes-sigs/service-catalog/pkg/apis/servicecatalog/v1beta1.ServiceBindingPropertiesState", "k8s.io/apimachinery/pkg/apis/meta/v1.Time"},
+			"github.com/kubernetes-sigs/service-catalog/pkg/apis/servicecatalog/v1beta1.LocalObjectReference", "github.com/kubernetes-sigs/service-catalog/pkg/apis/servicecatalog/v1beta1.ServiceBindingCondition", "github.com/kubernetes-sigs/service-catalog/pkg/apis/servicecatalog/v1beta1.ServiceBindingPropertiesState", "k8s.io/apimachinery/pkg/apis/meta/v1.Time"},
 	}
 }
 

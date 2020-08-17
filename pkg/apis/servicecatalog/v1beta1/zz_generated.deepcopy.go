@@ -1048,6 +1048,7 @@ func (in *ServiceBindingStatus) DeepCopyInto(out *ServiceBindingStatus) {
 		*out = new(ServiceBindingPropertiesState)
 		(*in).DeepCopyInto(*out)
 	}
+	out.Binding = in.Binding
 	return
 }
 
